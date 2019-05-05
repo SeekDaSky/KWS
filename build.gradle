@@ -1,0 +1,103 @@
+buildscript{
+    repositories {
+        jcenter()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicfu_version"
+    }
+}
+
+plugins {
+    id 'kotlin-multiplatform' version '1.3.30'
+    id 'maven-publish'
+}
+
+apply plugin: 'kotlinx-atomicfu'
+apply from: project.rootProject.file('gradle/maven-central.gradle')
+
+repositories {
+    jcenter()
+    mavenLocal()
+    //maven{ url "https://dl.bintray.com/seekdasky/sok" }
+}
+
+group 'seekdasky.kws'
+version kws_version
+
+kotlin {
+    targets {
+        fromPreset(presets.jvm, 'jvm')
+        fromPreset(presets.js, 'js'){
+            compilations.all {
+                tasks[compileKotlinTaskName].kotlinOptions {
+                    moduleKind = "umd"
+                    sourceMap = true
+                    metaInfo = true
+                }
+            }
+        }
+        fromPreset(presets.linuxX64, 'linux')
+    }
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
+                implementation "seekdasky.sok:sok-common:$sok_version"
+                implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-common:$coroutine_version"
+
+                implementation "org.jetbrains.kotlinx:atomicfu-common:$atomicfu_version"
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-test-common'
+                implementation 'org.jetbrains.kotlin:kotlin-test-annotations-common'
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation "seekdasky.sok:sok-jvm:$sok_version"
+                implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+                implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutine_version"
+
+                compileOnly "org.jetbrains.kotlinx:atomicfu:$atomicfu_version"
+            }
+        }
+        jvmTest {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-test'
+                implementation 'org.jetbrains.kotlin:kotlin-test-junit'
+
+                implementation "org.jetbrains.kotlinx:atomicfu:$atomicfu_version"
+            }
+        }
+        jsMain {
+            dependencies {
+                implementation "seekdasky.sok:sok-js:$sok_version"
+                implementation 'org.jetbrains.kotlin:kotlin-stdlib-js'
+                implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$coroutine_version"
+
+                compileOnly "org.jetbrains.kotlinx:atomicfu-js:$atomicfu_version"
+            }
+        }
+        jsTest {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-test-js'
+
+                implementation "org.jetbrains.kotlinx:atomicfu-js:$atomicfu_version"
+            }
+        }
+        linuxMain {
+            dependencies{
+                implementation "seekdasky.sok:sok-native-linux:$sok_version"
+                implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-native:$coroutine_version"
+
+                implementation "org.jetbrains.kotlinx:atomicfu-native:$atomicfu_version"
+            }
+        }
+        linuxTest {
+        }
+    }
+}
